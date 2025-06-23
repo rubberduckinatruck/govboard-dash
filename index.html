@@ -3,70 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GovBoard Dashboard</title>
+  <title>GovBoard Tag Chart</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
 <body class="bg-gray-100 text-gray-900">
   <div id="root" class="p-6"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useEffect } = React;
 
-    function Dashboard({ data }) {
-      const [filter, setFilter] = useState("");
-
-      const filtered = data.filter(item =>
-        item.title.toLowerCase().includes(filter.toLowerCase()) ||
-        item.tags.join(" ").toLowerCase().includes(filter.toLowerCase())
-      );
-
-      return (
-        <div>
-          <input
-            className="border p-2 w-full max-w-md mb-4"
-            type="text"
-            placeholder="Search by keyword or tag..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          />
-          <div className="grid gap-4">
-            {filtered.map((item, i) => (
-              <div key={i} className="p-4 border rounded shadow bg-white hover:shadow-md">
-                <div className="text-sm text-gray-600">{item.meetingDate}</div>
-                <div className="text-lg font-semibold">{item.title}</div>
-                <div className="text-sm italic text-gray-700">{item.category} — {item.type}</div>
-                <div className="mt-1 text-sm text-gray-500">Submitted by: {item.submitted_by || "N/A"}</div>
-                <div className="mt-1 text-sm">Tags: {item.tags.join(", ") || "None"}</div>
-                <div className="mt-2">
-                  <span className="text-sm font-medium">Votes:</span>
-                  <ul className="list-disc ml-6 text-sm">
-                    <li>Yes: {item.vote_yes || ""}</li>
-                    <li>No: {item.vote_no || ""}</li>
-                    <li>Abstain: {item.vote_abstain || ""}</li>
-                    <li>Not Present: {item.vote_not_present || ""}</li>
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    function App() {
-      const [data, setData] = useState([]);
-
+    function TagChart() {
       useEffect(() => {
         fetch("parsed_agenda_combined.json")
           .then(res => res.json())
           .then(data => {
-            setData(data);
-
-            // Tag frequency analysis
             const tagCounts = {};
             data.forEach(item => {
               item.tags.forEach(tag => {
@@ -91,37 +45,26 @@
                 responsive: true,
                 plugins: {
                   legend: { display: false },
-                  title: {
-                    display: true,
-                    text: "Agenda Items by Tag"
-                  }
+                  title: { display: true, text: "Agenda Items by Tag" }
                 },
                 scales: {
-                  y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
-                  }
+                  y: { beginAtZero: true, ticks: { stepSize: 1 } }
                 }
               }
             });
           })
           .catch(err => console.error("Failed to load data", err));
       }, []);
-          .then(res => res.json())
-          .then(setData)
-          .catch(err => console.error("Failed to load data", err));
-      }, []);
 
       return (
         <main>
-          <h1 className="text-3xl font-bold mb-4">GovBoard Agenda Dashboard</h1>
-<canvas id="tagChart" class="my-8 w-full max-w-2xl h-64"></canvas>
-          <Dashboard data={data} />
+          <h1 className="text-3xl font-bold mb-6">Tag Frequency Chart</h1>
+          <canvas id="tagChart" className="w-full max-w-3xl h-80"></canvas>
         </main>
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    ReactDOM.createRoot(document.getElementById("root")).render(<TagChart />);
   </script>
 </body>
 </html>
