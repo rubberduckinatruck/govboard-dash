@@ -8,6 +8,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-900">
   <div id="root" class="p-6"></div>
@@ -62,6 +63,51 @@
       useEffect(() => {
         fetch("parsed_agenda_combined.json")
           .then(res => res.json())
+          .then(data => {
+            setData(data);
+
+            // Tag frequency analysis
+            const tagCounts = {};
+            data.forEach(item => {
+              item.tags.forEach(tag => {
+                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+              });
+            });
+
+            const ctx = document.getElementById("tagChart").getContext("2d");
+            new Chart(ctx, {
+              type: "bar",
+              data: {
+                labels: Object.keys(tagCounts),
+                datasets: [{
+                  label: "Tag Frequency",
+                  data: Object.values(tagCounts),
+                  backgroundColor: "rgba(59, 130, 246, 0.6)",
+                  borderColor: "rgba(37, 99, 235, 1)",
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
+                  title: {
+                    display: true,
+                    text: "Agenda Items by Tag"
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                  }
+                }
+              }
+            });
+          })
+          .catch(err => console.error("Failed to load data", err));
+      }, []);
+          .then(res => res.json())
           .then(setData)
           .catch(err => console.error("Failed to load data", err));
       }, []);
@@ -69,6 +115,7 @@
       return (
         <main>
           <h1 className="text-3xl font-bold mb-4">GovBoard Agenda Dashboard</h1>
+<canvas id="tagChart" class="my-8 w-full max-w-2xl h-64"></canvas>
           <Dashboard data={data} />
         </main>
       );
